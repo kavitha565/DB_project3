@@ -3,6 +3,7 @@ import random
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_mysqldb import MySQL
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for cross-origin requests
@@ -15,6 +16,12 @@ app.config['MYSQL_DB'] = 'kgp4805'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
+def getEndDate(startDate, duration, durationType):
+    if durationType == 'days':
+        endDate = startDate + timedelta(days=duration)
+    else:
+        end_daendDatete_obj = start_dastartDatete_str + timedelta(weeks=duration)
+    return endDate.strftime('%Y-%m-%d')
 
 # Read customers from database
 @app.route('/customers', methods=['GET'])
@@ -189,6 +196,8 @@ def get_rentals():
         # Convert the result into a list of dictionaries
         rental_list = []
         for rental in rentals:
+            durationType = 'days' if rental['noOfDays'] else 'weeks'
+            duration = rental['noOfDays'] if durationType=='days' else rental['noOfWeeks']
             rental_list.append({
                 'custID': rental['custID'],
                 'carID': rental['carID'],
@@ -197,7 +206,7 @@ def get_rentals():
                 'noOfDays': rental['noOfDays'],
                 'noOfWeeks': rental['noOfWeeks'],
                 'startDate': rental['startDate'],
-                'endDate': '2023-05-05'
+                'endDate': getEndDate(rental['startDate'], duration, durationType)
             })
         
         return jsonify(rentals=rental_list), 200
